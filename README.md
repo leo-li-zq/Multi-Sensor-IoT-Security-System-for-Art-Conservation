@@ -5,20 +5,15 @@ Multi-Sensor IoT Security System for Art ConservationA real-time, multi-threaded
 This project explores the integration of deterministic sensor data with asynchronous web services. By implementing custom I2C drivers and multi-threaded monitoring loops, the system achieves industrial-grade responsiveness in detecting physical state changes—a critical requirement for high-stakes conservation environments.
 
 
-🌟 Key Features
-# Multi-Dimensional Sensing: 
-Monitors light intensity (VEML7700), atmospheric pressure (SPL06), distance (VL5300 ToF), and temperature/humidity (SHT4x).
-# Custom Sensor Drivers: 
-Includes a high-precision implementation for the SPL06-001 pressure sensor to detect subtle air pressure changes.
-# Intelligent Alarm Logic:
+# Key Features
+Multi-Dimensional Sensing: Monitors light intensity (VEML7700), atmospheric pressure (SPL06), distance (VL5300 ToF), and temperature/humidity (SHT4x).
+Custom Sensor Drivers: Includes a high-precision implementation for the SPL06-001 pressure sensor to detect subtle air pressure changes.
+Intelligent Alarm Logic:
     Baseline Calibration: Establishes environmental "normal" states upon arming the system.
     Deviation Detection: Triggers alerts when real-time data drifts beyond predefined physical thresholds.
-# Automated Evidence Logging: 
-Upon alarm, the system initiates a 120-second continuous image capture sequence using Picamera2 for forensic evidence.
-# Asset Identification:
-Integrated QR code recognition (ZBar) to verify and log specific art pieces during the scanning phase.
-# Live Dashboard:
-A Flask-based web interface providing real-time telemetry, live video feed, and historical data visualization.
+Automated Evidence Logging: Upon alarm, the system initiates a 120-second continuous image capture sequence using Picamera2 for forensic evidence.
+Asset Identification:Integrated QR code recognition (ZBar) to verify and log specific art pieces during the scanning phase.
+Live Dashboard:A Flask-based web interface providing real-time telemetry, live video feed, and historical data visualization.
 
 🛠️ Hardware Stack
 # Controller: 
