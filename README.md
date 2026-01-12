@@ -1,7 +1,7 @@
 # Multi-Sensor-IoT-Security-System-for-Art-Conservation
 Multi-Sensor IoT Security System for Art ConservationA real-time, multi-threaded security monitoring system designed for high-value asset protection (e.g., museum art pieces). This system utilizes a Raspberry Pi Zero 2W integrated with a suite of I2C sensors to detect environmental anomalies and unauthorized movement.
 
-📝 Technical Motivation
+# Technical Motivation
 This project explores the integration of deterministic sensor data with asynchronous web services. By implementing custom I2C drivers and multi-threaded monitoring loops, the system achieves industrial-grade responsiveness in detecting physical state changes—a critical requirement for high-stakes conservation environments.
 
 
@@ -20,10 +20,10 @@ Asset Identification:Integrated QR code recognition (ZBar) to verify and log spe
 
 Live Dashboard:A Flask-based web interface providing real-time telemetry, live video feed, and historical data visualization.
 
-🛠️ Hardware Stack
-# Controller: 
-Raspberry Pi Zero 2W
-# Sensors:
+# Hardware Stack
+Controller: Raspberry Pi Zero 2W
+
+Sensors:
 Distance: VL5300 ToF (Time-of-Flight) Laser Ranging
 Pressure: SPL06-001 (hPa)
 Environment: SHT40 (Temp/Humid)
