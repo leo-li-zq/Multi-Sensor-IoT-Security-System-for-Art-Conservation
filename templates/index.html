@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sotheby's Smart Security System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #121212; margin: 0; padding: 20px; color: #e0e0e0; }
+        .container { max-width: 1200px; margin: auto; }
+
+        header { background: #1e1e1e; border-bottom: 3px solid #d4af37; padding: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
+        header h1 { margin: 0; font-size: 1.8rem; color: #d4af37; letter-spacing: 1px; }
+        .status-badge { background: #333; color: white; padding: 6px 18px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; }
+
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .card { background: #1e1e1e; border-radius: 12px; padding: 25px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); margin-bottom: 20px; border: 1px solid #333; }
+        .card h3 { margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 15px; color: #aaa; font-size: 1.1rem; font-weight: 500; }
+
+        .sensor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+        .sensor-box { background: #252525; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .sensor-label { color: #888; font-size: 0.85rem; display: block; margin-bottom: 5px; }
+        .sensor-val { font-size: 2rem; font-weight: bold; color: #fff; display: block; line-height: 1.2; }
+
+        .baseline-row { font-size: 0.8rem; color: #666; margin-top: 5px; min-height: 1.2em; border-top: 1px dashed #444; padding-top: 4px;}
+        .baseline-val { color: #d4af37; font-weight: bold; margin-left: 3px; }
+
+        /* Smoke status styles */
+        .smoke-safe { color: #28a745; }
+        .smoke-danger { color: #dc3545; animation: pulse 0.5s infinite; }
+
+        #persistent-art-info { background: #2a2a2a; border-left: 4px solid #d4af37; padding: 15px; margin-bottom: 20px; display: none; }
+        #persistent-art-info h4 { margin: 0 0 5px 0; color: #d4af37; font-size: 1rem; }
+        #persistent-art-info p { margin: 0; color: #ccc; font-size: 0.9rem; font-style: italic; }
+
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; margin-top: 10px; font-weight: 600; transition: all 0.2s; }
+        .btn-scan { background: #007bff; color: white; }
+        .btn-scan:hover { background: #0056b3; }
+        .btn-arm { background: #28a745; color: white; }
+        .btn-arm:hover { background: #218838; }
+        .btn-reset { background: #6c757d; color: white; }
+        .btn-reset:hover { background: #545b62; }
+        .btn:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+        #alarm-banner { background: #dc3545; color: white; text-align: center; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; font-weight: bold; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sotheby's Logistics Security</h1>
+            <div id="sys-status" class="status-badge">SYSTEM IDLE</div>
+        </header>
+
+        <div id="alarm-banner">⚠️ ALARM TRIGGERED: <span id="alarm-reason"></span> ⚠️</div>
+
+        <div class="main-grid">
+            <div class="left-col">
+                <div class="card">
+                    <h3>Environmental Monitoring</h3>
+                    <div class="sensor-grid">
+                        <div class="sensor-box">
+                            <span class="sensor-label">🔥 Smoke Status</span>
+                            <span class="sensor-val" id="val-smoke" style="font-size:1.5rem">Detecting...</span>
+                        </div>
+                        <div class="sensor-box">
+                            <span class="sensor-label">Temperature (°C)</span>
+                            <span class="sensor-val" id="val-temp">--</span>
+                            <div class="baseline-row">Baseline: <span id="base-temp" class="baseline-val">--</span></div>
+                        </div>
+                        <div class="sensor-box">
+                            <span class="sensor-label">Humidity (%)</span>
+                            <span class="sensor-val" id="val-hum">--</span>
+                            <div class="baseline-row">Baseline: <span id="base-hum" class="baseline-val">--</span></div>
+                        </div>
+                        <div class="sensor-box">
+                            <span class="sensor-label">Light (Lux)</span>
+                            <span class="sensor-val" id="val-light">--</span>
+                            <div class="baseline-row">Baseline: <span id="base-light" class="baseline-val">--</span></div>
+                        </div>
+                        <div class="sensor-box">
+                            <span class="sensor-label">Pressure (hPa)</span>
+                            <span class="sensor-val" id="val-press">--</span>
+                            <div class="baseline-row">Baseline: <span id="base-press" class="baseline-val">--</span></div>
+                        </div>
+                        <div class="sensor-box">
+                            <span class="sensor-label">Distance (mm)</span>
+                            <span class="sensor-val" id="val-dist">--</span>
+                            <div class="baseline-row">Baseline: <span id="base-dist" class="baseline-val">--</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Historical Trends (Last 4 Hours)</h3>
+                    <canvas id="historyChart" height="150"></canvas>
+                </div>
+            </div>
+
+            <div class="right-col">
+                <div class="card">
+                    <h3>Project 1: Artifact Security</h3>
+                    <div id="persistent-art-info">
+                        <h4>🏷️ Current Artifact</h4>
+                        <p id="art-info-text">Loading...</p>
+                        <div style="font-size:0.8rem; color:#666; margin-top:5px;">ID: <span id="art-id-text">--</span></div>
+                    </div>
+
+                    <div id="control-panel-content">
+                        <div id="step-scan">
+                            <p style="color:#888; font-size:0.9rem;">Align the artifact QR code with the camera and click the button below to register.</p>
+                            <button class="btn btn-scan" onclick="scanQR()">📸 1. Scan & Register Artifact</button>
+                        </div>
+                        <div id="step-arm" style="display:none;">
+                            <p style="color:#d4af37; font-size:0.9rem;">✅ Identification Successful!</p>
+                            <p style="color:#888; font-size:0.9rem;">Ensure all environmental readings are stable, then click below to <b>lock current values</b> as the baseline.</p>
+                            <button class="btn btn-arm" onclick="armSystem()">🔒 2. Lock Baseline & Arm System</button>
+                            <button class="btn btn-reset" onclick="resetSystem()" style="background:transparent; border:1px solid #555; color:#888; padding:8px; margin-top:5px;">❌ Rescan</button>
+                        </div>
+                        <div id="step-monitor" style="display:none;">
+                            <div style="text-align:center; padding:15px; background:#252525; border-radius:8px; margin-bottom:15px;">
+                                <div style="color:#28a745; font-size:1.2rem; font-weight:bold;">🛡️ System Armed</div>
+                                <div style="color:#888; font-size:0.8rem; margin-top:5px;">Continuously monitoring 6 security metrics...</div>
+                            </div>
+                            <button class="btn btn-reset" onclick="resetSystem()">🔄 End Task / New Entry</button>
+                        </div>
+                    </div>
+                    <div id="msg-box" style="margin-top:10px; text-align:center; font-size:0.9rem;"></div>
+                </div>
+
+                <div class="card">
+                    <h3>Live Surveillance Feed</h3>
+                    <img src="{{ url_for('video_feed') }}" width="100%" style="border-radius:4px; border:1px solid #333; background:#000;" alt="Camera">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Chart.defaults.color = '#888';
+        Chart.defaults.borderColor = '#333';
+        let chart;
+
+        function initChart() {
+            const ctx = document.getElementById('historyChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'Temperature', data: [], borderColor: '#ff6384', borderWidth: 2, pointRadius: 0, yAxisID: 'y1' },
+                    { label: 'Humidity', data: [], borderColor: '#36a2eb', borderWidth: 2, pointRadius: 0, yAxisID: 'y2' }
+                ]},
+                options: {
+                    animation: false,
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { ticks: { maxTicksLimit: 10 } }, // Limit X-axis labels
+                        y1: {
+                            position: 'left', title: {display:true, text:'Temperature (°C)'},
+                            suggestedMin: 15, suggestedMax: 35 // Fixed view to prevent minor fluctuation shaking
+                        },
+                        y2: { position: 'right', min:0, max:100, grid:{drawOnChartArea:false} }
+                    }
+                }
+            });
+        }
+
+        function updateUI(data) {
+            const status = data.system_status;
+            const sysBadge = document.getElementById('sys-status');
+            sysBadge.innerText = `STATUS: ${status}`;
+            sysBadge.style.background = (status === 'ARMED') ? '#28a745' : ((status === 'SCANNED') ? '#d4af37' : '#444');
+
+            const stepScan = document.getElementById('step-scan');
+            const stepArm = document.getElementById('step-arm');
+            const stepMonitor = document.getElementById('step-monitor');
+            const artInfoPanel = document.getElementById('persistent-art-info');
+
+            if (status === 'IDLE') {
+                stepScan.style.display = 'block'; stepArm.style.display = 'none'; stepMonitor.style.display = 'none'; artInfoPanel.style.display = 'none';
+            } else if (status === 'SCANNED') {
+                stepScan.style.display = 'none'; stepArm.style.display = 'block'; stepMonitor.style.display = 'none';
+                artInfoPanel.style.display = 'block';
+                document.getElementById('art-info-text').innerText = data.art_piece_info;
+                document.getElementById('art-id-text').innerText = data.art_piece_id;
+            } else if (status === 'ARMED') {
+                stepScan.style.display = 'none'; stepArm.style.display = 'none'; stepMonitor.style.display = 'block';
+                artInfoPanel.style.display = 'block';
+            }
+
+            if (data.alarm_status !== 'NONE') {
+                document.getElementById('alarm-banner').style.display = 'block';
+                document.getElementById('alarm-reason').innerText = data.alarm_status;
+            } else {
+                document.getElementById('alarm-banner').style.display = 'none';
+            }
+        }
+
+        async function refreshData() {
+            try {
+                const res = await fetch('/api/data');
+                const data = await res.json();
+
+                document.getElementById('val-temp').innerText = data.current_temp_c.toFixed(1);
+                document.getElementById('val-hum').innerText = data.current_humidity.toFixed(1);
+                document.getElementById('val-light').innerText = data.current_light.toFixed(0);
+                document.getElementById('val-press').innerText = data.current_pressure.toFixed(1);
+                document.getElementById('val-dist').innerText = data.current_distance.toFixed(0);
+
+                // Update smoke status
+                const smokeEl = document.getElementById('val-smoke');
+                if (data.smoke_safe) {
+                    smokeEl.innerText = "Safe";
+                    smokeEl.className = "sensor-val smoke-safe";
+                } else {
+                    smokeEl.innerText = "Smoke Detected!";
+                    smokeEl.className = "sensor-val smoke-danger";
+                }
+
+                if (data.system_status === 'ARMED') {
+                    document.getElementById('base-temp').innerText = data.baseline_temp.toFixed(1);
+                    document.getElementById('base-hum').innerText = data.baseline_humidity.toFixed(1);
+                    document.getElementById('base-light').innerText = data.baseline_light.toFixed(0);
+                    document.getElementById('base-press').innerText = data.baseline_pressure.toFixed(1);
+                    document.getElementById('base-dist').innerText = data.baseline_distance.toFixed(0);
+                } else {
+                    document.getElementById('base-temp').innerText = "--";
+                    document.getElementById('base-hum').innerText = "--";
+                    document.getElementById('base-light').innerText = "--";
+                    document.getElementById('base-press').innerText = "--";
+                    document.getElementById('base-dist').innerText = "--";
+                }
+                updateUI(data);
+            } catch(e) { console.error(e); }
+        }
+
+        async function updateChart() {
+            try {
+                const res = await fetch('/api/history');
+                const hist = await res.json();
+                chart.data.labels = hist.map(h => h.timestamp.substring(11,19));
+                chart.data.datasets[0].data = hist.map(h => h.temp_c);
+                chart.data.datasets[1].data = hist.map(h => h.humidity);
+                chart.update('none');
+            } catch(e){}
+        }
+
+        async function scanQR() {
+            const btn = document.querySelector('.btn-scan');
+            btn.disabled = true; btn.innerText = "⏳ Scanning...";
+            try {
+                const res = await fetch('/api/scan', {method:'POST'});
+                const json = await res.json();
+                if(json.status === 'error') alert("❌ " + json.message);
+            } catch(e) { alert("Connection Failed"); }
+            btn.disabled = false; btn.innerText = "📸 1. Scan & Register Artifact";
+            refreshData();
+        }
+
+        async function armSystem() {
+            const btn = document.querySelector('.btn-arm');
+            btn.disabled = true;
+            await fetch('/api/arm', {method:'POST'});
+            btn.disabled = false;
+            refreshData();
+        }
+
+        async function resetSystem() {
+            if(!confirm("Are you sure you want to disarm and register a new item?")) return;
+            await fetch('/api/reset', {method:'POST'});
+            refreshData();
+        }
+
+        window.onload = () => {
+            initChart();
+            setInterval(refreshData, 1000);
+            setInterval(updateChart, 5000);
+        };
+    </script>
+</body>
+</html>
