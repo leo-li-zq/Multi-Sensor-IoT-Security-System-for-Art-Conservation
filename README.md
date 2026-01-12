@@ -24,20 +24,29 @@ Live Dashboard:A Flask-based web interface providing real-time telemetry, live v
 Controller: Raspberry Pi Zero 2W
 
 Sensors:
+
 Distance: VL5300 ToF (Time-of-Flight) Laser Ranging
+
 Pressure: SPL06-001 (hPa)
+
 Environment: SHT40 (Temp/Humid)
+
 VEML7700 (Lux)
+
 Safety: Smoke Sensor & Active Buzzer
+
 Camera: Raspberry Pi Camera Module (Picamera2)
 
-💻 Software Architecture
+# Software Architecture
 Language: Python 3.x
+
 Framework: Flask (Web UI)
+
 Concurrency: Multi-threading for simultaneous sensor polling, camera streaming, and web hosting.
+
 Protocols: I2C (via smbus2 and busio).
 
-🚀 Installation & Usage
+# Installation & Usage
 
 1.Clone the Repository:
 'git clone https://github.com/your-username/IoT-Art-Security.git'
